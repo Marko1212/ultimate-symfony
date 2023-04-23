@@ -6,11 +6,15 @@ use App\Entity\Category;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CategoryController extends AbstractController
 {
@@ -64,9 +68,40 @@ class CategoryController extends AbstractController
         CategoryRepository $categoryRepository,
         Request $request,
         EntityManagerInterface $em,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        Security $security
     ) {
+        // $this->denyAccessUnlessGranted("ROLE_ADMIN", null, "Vous n'avez pas le droit d'acceder a cette ressource");
+        //$user = $security->getUser();
+        /*         $user = $this->getUser();
+
+        if ($user === null) {
+            return $this->redirectToRoute('security_login');
+        }
+
+        if ($this->isGranted('ROLE_ADMIN') === false) {
+            throw new AccessDeniedHttpException("Vous n'avez pas le droit d'acceder a cette ressource");
+        } */
+
         $category = $categoryRepository->find($id);
+
+        if (!$category) {
+            throw new NotFoundHttpException("Cette categorie n'existe pas");
+        }
+
+        // $security->isGranted('CAN_EDIT', $category);
+
+        //   $this->denyAccessUnlessGranted('CAN_EDIT', $category, "Vous n'etes pas le proprietaire de cette categorie");
+
+        // $user = $this->getUser();
+
+        // if (!$user) {
+        //     return $this->redirectToRoute("security_login");
+        // }
+
+        // if ($user !== $category->getOwner()) {
+        //     throw new AccessDeniedHttpException("Vous n'etes pas le proprietaire de cette categorie");
+        // }
 
         $form = $this->createForm(CategoryType::class, $category);
 
